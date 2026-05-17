@@ -1,18 +1,23 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux'; // Imported for Redux state management
+import { useDispatch, useSelector } from 'react-redux'; // Added useSelector here
 import './ProductList.css';
 import CartItem from './CartItem';
-import { addItem } from './CartSlice'; // Importing the action from your Redux slice
+import { addItem } from './CartSlice'; 
 
 function ProductList({ onHomeClick }) {
     const [showCart, setShowCart] = useState(false);
     const [showPlants, setShowPlants] = useState(false);
-    
-    // State to track which products are added to the cart
     const [addedToCart, setAddedToCart] = useState({}); 
 
-    // Initialize the Redux dispatch function
     const dispatch = useDispatch(); 
+    
+    // Read the cart items from the Redux store
+    const cartItems = useSelector((state) => state.cart.items);
+
+    // Calculate the total quantity of items in the cart
+    const calculateTotalQuantity = () => {
+        return cartItems.reduce((total, item) => total + item.quantity, 0);
+    };
 
     const plantsArray = [
         {
@@ -78,7 +83,7 @@ function ProductList({ onHomeClick }) {
         padding: '15px',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center', // Fixed typo from 'alignIems'
+        alignItems: 'center',
         fontSize: '20px',
     };
     
@@ -95,7 +100,6 @@ function ProductList({ onHomeClick }) {
         textDecoration: 'none',
     };
 
-    // The function to handle adding an item to the Redux cart
     const handleAddToCart = (product) => {
         dispatch(addItem(product)); 
         setAddedToCart((prevState) => ({ 
@@ -141,7 +145,24 @@ function ProductList({ onHomeClick }) {
                 </div>
                 <div style={styleObjUl}>
                     <div> <a href="#" onClick={(e) => handlePlantsClick(e)} style={styleA}>Plants</a></div>
-                    <div> <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}><h1 className='cart'><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68"><rect width="156" height="156" fill="none"></rect><circle cx="80" cy="216" r="12"></circle><circle cx="184" cy="216" r="12"></circle><path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" id="mainIconPathAttribute"></path></svg></h1></a></div>
+                    <div> 
+                        <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}>
+                            <h1 className='cart'>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68">
+                                    <rect width="156" height="156" fill="none"></rect>
+                                    <circle cx="80" cy="216" r="12"></circle>
+                                    <circle cx="184" cy="216" r="12"></circle>
+                                    <path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" id="mainIconPathAttribute"></path>
+                                </svg>
+                                {/* This is where the dynamic quantity is injected */}
+                                {cartItems.length > 0 && (
+                                    <span style={{ fontSize: '20px', marginLeft: '8px', verticalAlign: 'top', backgroundColor: 'red', borderRadius: '50%', padding: '2px 8px' }}>
+                                        {calculateTotalQuantity()}
+                                    </span>
+                                )}
+                            </h1>
+                        </a>
+                    </div>
                 </div>
             </div>
             
@@ -162,14 +183,11 @@ function ProductList({ onHomeClick }) {
                                         />
                                         <div className="product-title">{plant.name}</div> 
                                         <div className="product-description">{plant.description}</div> 
-                                        {/* Removed the extra $ here since plant.cost already includes it */}
                                         <div className="product-cost">{plant.cost}</div> 
-                                        
-                                        {/* Button updated to dispatch and disable dynamically */}
                                         <button
                                             className="product-button"
                                             onClick={() => handleAddToCart(plant)} 
-                                            disabled={addedToCart[plant.name]} // Disables if already added
+                                            disabled={addedToCart[plant.name]} 
                                         >
                                             {addedToCart[plant.name] ? "Added to Cart" : "Add to Cart"}
                                         </button>
